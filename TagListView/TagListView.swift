@@ -14,7 +14,7 @@ import UIKit
 }
 
 @IBDesignable
-public class TagListView: UIView {
+public class TagListView: UIView, UITextFieldDelegate {
     
     @IBInspectable public dynamic var textColor: UIColor = UIColor.whiteColor() {
         didSet {
@@ -192,6 +192,8 @@ public class TagListView: UIView {
     @IBOutlet public weak var delegate: TagListViewDelegate?
     
     public private(set) var tagViews: [TagView] = []
+    private var textField = TextField()
+    private var hiddenTextField = TextField()
     private(set) var tagBackgroundViews: [UIView] = []
     private(set) var rowViews: [UIView] = []
     private(set) var tagViewHeight: CGFloat = 0
@@ -200,6 +202,7 @@ public class TagListView: UIView {
             invalidateIntrinsicContentSize()
         }
     }
+    
     
     // MARK: - Interface Builder
     
@@ -222,6 +225,16 @@ public class TagListView: UIView {
         for view in views {
             view.removeFromSuperview()
         }
+        textField.removeFromSuperview()
+        textField = TextField(frame: CGRectMake(0, 0, 64, tagViewHeight))
+        textField.font = textFont
+        textField.deleteBackwardHandler = {
+            if let lastTagView = self.tagViews.last {
+                self.removeTagView(lastTagView)
+            }
+        }
+        textField.delegate = self
+//        textField.backgroundColor = UIColor.orangeColor()
         rowViews.removeAll(keepCapacity: true)
         
         var currentRow = 0
@@ -268,9 +281,56 @@ public class TagListView: UIView {
             currentRowView.frame.size.width = currentRowWidth
             currentRowView.frame.size.height = max(tagViewHeight, currentRowView.frame.height)
         }
+        
+        // Add text view
+        if currentRowTagCount == 0 || currentRowWidth + textField.frame.width > frame.width {
+            currentRow += 1
+            currentRowWidth = 0
+            currentRowView = UIView()
+            currentRowView.frame.origin.y = CGFloat(currentRow - 1) * (tagViewHeight + marginY)
+            rowViews.append(currentRowView)
+            addSubview(currentRowView)
+        }
+        
+        textField.frame.origin = CGPoint(x: currentRowWidth, y: 0)
+        textField.frame.size = CGSize(width: frame.width - currentRowWidth, height: textField.frame.height)
+//        currentRowWidth += textField.frame.width + marginX
+        
+        currentRowView.addSubview(textField)
+        currentRowView.frame.size.width = currentRowWidth
+        currentRowView.frame.size.height = max(tagViewHeight, currentRowView.frame.height)
+        
+        textField.becomeFirstResponder()
+        
         rows = currentRow
         
         invalidateIntrinsicContentSize()
+    }
+    
+//    -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
+//    CGPoint locationPoint = [[touches anyObject] locationInView:self];
+//    UIView* viewYouWishToObtain = [self hitTest:locationPoint withEvent:event];
+//    }
+    
+    public override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if let locationPoint = touches.first?.locationInView(self) {
+            if let hitView = hitTest(locationPoint, withEvent: event) {
+                if hitView == self {
+                    textField.becomeFirstResponder()
+                }
+            }
+        }
+    }
+    
+    // MARK: UITextFieldDelegate
+    
+    public func textFieldShouldReturn(textField: UITextField) -> Bool {
+        
+        if let text = textField.text {
+            addTag(text)
+        }
+        
+        return true
     }
     
     // MARK: - Manage tags

@@ -11,13 +11,12 @@ import UIKit
 class ViewController: UIViewController, TagListViewDelegate {
 
     @IBOutlet weak var tagListView: TagListView!
-    @IBOutlet weak var biggerTagListView: TagListView!
-    @IBOutlet weak var biggestTagListView: TagListView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         tagListView.delegate = self
+        tagListView.textFont = UIFont.systemFontOfSize(17.0)
         tagListView.addTag("TagListView")
         tagListView.addTag("TEAChart")
         tagListView.addTag("To Be Removed")
@@ -28,35 +27,7 @@ class ViewController: UIViewController, TagListViewDelegate {
             self?.tagListView.removeTagView(tagView)
         }
         
-        let tagView = tagListView.addTag("gray")
-        tagView.tagBackgroundColor = UIColor.grayColor()
-        tagView.onTap = { tagView in
-            print("Don’t tap me!")
-        }
-        
         tagListView.insertTag("This should be the third tag", atIndex: 2)
-        
-        biggerTagListView.delegate = self
-        biggerTagListView.textFont = UIFont.systemFontOfSize(15)
-        biggerTagListView.shadowRadius = 2
-        biggerTagListView.shadowOpacity = 0.4
-        biggerTagListView.shadowColor = UIColor.blackColor()
-        biggerTagListView.shadowOffset = CGSizeMake(1, 1)
-        biggerTagListView.addTag("Inboard")
-        biggerTagListView.addTag("Pomotodo")
-        biggerTagListView.addTag("Halo Word")
-        biggerTagListView.alignment = .Center
-        
-        biggestTagListView.delegate = self
-        biggestTagListView.textFont = UIFont.systemFontOfSize(24)
-        biggestTagListView.addTag("all")
-        biggestTagListView.addTag("your")
-        biggestTagListView.addTag("tag")
-        biggestTagListView.addTag("are")
-        biggestTagListView.addTag("belong")
-        biggestTagListView.addTag("to")
-        biggestTagListView.addTag("us")
-        biggestTagListView.alignment = .Right
         
     }
     
