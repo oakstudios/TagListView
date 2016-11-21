@@ -23,11 +23,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4S7-JK-aUE" customClass="TagListView" customModule="TagListViewDemo" customModuleProvider="target">
-                                <rect key="frame" x="16" y="122" width="343" height="82"/>
-                                <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" priority="250" constant="82" id="Eqd-9H-22r"/>
-                                </constraints>
+                                <rect key="frame" x="16" y="84" width="343" height="24"/>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="color" keyPath="tagBackgroundColor">
                                         <color key="value" red="0.066666666669999999" green="0.066666666669999999" blue="0.066666666669999999" alpha="0.054897231540000001" colorSpace="custom" customColorSpace="sRGB"/>
@@ -83,12 +79,21 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="6G0-qw-1Zh">
+                                <rect key="frame" x="156" y="229" width="46" height="30"/>
+                                <state key="normal" title="Print Values"/>
+                                <connections>
+                                    <action selector="printValues:" destination="BYZ-38-t0r" eventType="touchUpInside" id="xFH-mt-8fS"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="4S7-JK-aUE" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="M7a-Ac-6Qz"/>
+                            <constraint firstItem="6G0-qw-1Zh" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="YpT-af-RSY"/>
+                            <constraint firstItem="6G0-qw-1Zh" firstAttribute="top" secondItem="4S7-JK-aUE" secondAttribute="bottom" constant="64" id="uj7-zD-j40"/>
                             <constraint firstAttribute="trailingMargin" secondItem="4S7-JK-aUE" secondAttribute="trailing" id="x7Y-zY-Agy"/>
-                            <constraint firstItem="4S7-JK-aUE" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="102" id="zFE-TU-Kx6"/>
+                            <constraint firstItem="4S7-JK-aUE" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="64" id="zFE-TU-Kx6"/>
                         </constraints>
                     </view>
                     <connections>

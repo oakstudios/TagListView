@@ -8,43 +8,37 @@
 
 import UIKit
 
-class ViewController: UIViewController, TagListViewDelegate {
+class ViewController: UIViewController {
 
     @IBOutlet weak var tagListView: TagListView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        tagListView.delegate = self
         tagListView.textFont = UIFont.systemFontOfSize(17.0)
+        tagListView.selectedBorderColor = UIColor(red: 70/255, green: 222/255, blue: 220/255, alpha: 0.8)
+        tagListView.tagSelectedBackgroundColor = UIColor(red: 70/255, green: 222/255, blue: 220/255, alpha: 0.3)
+        
         tagListView.addTag("TagListView")
-        tagListView.addTag("TEAChart")
-        tagListView.addTag("To Be Removed")
-        tagListView.addTag("To Be Removed")
+        tagListView.addTag("Is")
+        tagListView.addTag("Super")
+        tagListView.addTag("Cool")
+        tagListView.addTag("Beautiful")
+        tagListView.addTag("Uno")
+        tagListView.addTag("Dos")
         tagListView.addTag("Quark Shell")
-        tagListView.removeTag("To Be Removed")
-        tagListView.addTag("On tap will be removed").onTap = { [weak self] tagView in
-            self?.tagListView.removeTagView(tagView)
+        tagListView.addTag("Keep it going")
+    }
+    
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
+        if let locationPoint = touches.first?.locationInView(self.view),
+            let hitView = view.hitTest(locationPoint, withEvent: event) where hitView == self.view
+        {
+            tagListView.resignFirstResponder()
         }
-        
-        tagListView.insertTag("This should be the third tag", atIndex: 2)
-        
     }
     
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
-
-    // MARK: TagListViewDelegate
-    func tagPressed(title: String, tagView: TagView, sender: TagListView) {
-        print("Tag pressed: \(title), \(sender)")
-        tagView.selected = !tagView.selected
-    }
-    
-    func tagRemoveButtonPressed(title: String, tagView: TagView, sender: TagListView) {
-        print("Tag Remove pressed: \(title), \(sender)")
-        sender.removeTagView(tagView)
+    @IBAction func printValues(sender: AnyObject) {
+        print(tagListView.tagValues())
     }
 }
-

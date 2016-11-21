@@ -192,8 +192,12 @@ public class TagListView: UIView, UITextFieldDelegate {
     @IBOutlet public weak var delegate: TagListViewDelegate?
     
     public private(set) var tagViews: [TagView] = []
+    
+    private var text: String? = ""
     private var textField = TextField()
     private var hiddenTextField = TextField()
+    private var wasEditing = false
+    
     private(set) var tagBackgroundViews: [UIView] = []
     private(set) var rowViews: [UIView] = []
     private(set) var tagViewHeight: CGFloat = 0
@@ -225,16 +229,6 @@ public class TagListView: UIView, UITextFieldDelegate {
         for view in views {
             view.removeFromSuperview()
         }
-        textField.removeFromSuperview()
-        textField = TextField(frame: CGRectMake(0, 0, 64, tagViewHeight))
-        textField.font = textFont
-        textField.deleteBackwardHandler = {
-            if let lastTagView = self.tagViews.last {
-                self.removeTagView(lastTagView)
-            }
-        }
-        textField.delegate = self
-//        textField.backgroundColor = UIColor.orangeColor()
         rowViews.removeAll(keepCapacity: true)
         
         var currentRow = 0
@@ -283,6 +277,21 @@ public class TagListView: UIView, UITextFieldDelegate {
         }
         
         // Add text view
+        textField.removeFromSuperview()
+        textField.font = textFont
+        let textWidth = (text?.sizeWithAttributes([NSFontAttributeName: textFont]).width ?? 0) + 10.0
+        
+        textField = TextField(frame: CGRectMake(0, 0, textWidth, tagViewHeight))
+        textField.text = text
+        
+        textField.addTarget(self, action: #selector(TagListView.textFieldDidChange(_:)), forControlEvents: UIControlEvents.EditingChanged)
+        textField.deleteHandler = { isEmpty in
+            if let lastTagView = self.tagViews.last where isEmpty {
+                self.removeTagView(lastTagView)
+            }
+        }
+        textField.delegate = self
+        
         if currentRowTagCount == 0 || currentRowWidth + textField.frame.width > frame.width {
             currentRow += 1
             currentRowWidth = 0
@@ -293,32 +302,44 @@ public class TagListView: UIView, UITextFieldDelegate {
         }
         
         textField.frame.origin = CGPoint(x: currentRowWidth, y: 0)
-        textField.frame.size = CGSize(width: frame.width - currentRowWidth, height: textField.frame.height)
-//        currentRowWidth += textField.frame.width + marginX
+        textField.frame.size = CGSize(width: frame.width - currentRowWidth - 1, height: textField.frame.height)
         
         currentRowView.addSubview(textField)
         currentRowView.frame.size.width = currentRowWidth
         currentRowView.frame.size.height = max(tagViewHeight, currentRowView.frame.height)
         
-        textField.becomeFirstResponder()
+        // End add text view
+        
+        // Hidden Text View
+        hiddenTextField.removeFromSuperview()
+        hiddenTextField = TextField(frame: CGRectZero)
+        hiddenTextField.autocorrectionType = .No
+        hiddenTextField.deleteHandler = { isEmpty in
+            for tagView in self.selectedTags() {
+                self.removeTagView(tagView)
+            }
+        }
+        addSubview(hiddenTextField)
+        
+        if wasEditing {
+            if selectedTags().count > 0 {
+                hiddenTextField.becomeFirstResponder()
+            } else {
+                textField.becomeFirstResponder()
+            }
+        }
         
         rows = currentRow
         
         invalidateIntrinsicContentSize()
     }
     
-//    -(void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-//    CGPoint locationPoint = [[touches anyObject] locationInView:self];
-//    UIView* viewYouWishToObtain = [self hitTest:locationPoint withEvent:event];
-//    }
-    
     public override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
-        if let locationPoint = touches.first?.locationInView(self) {
-            if let hitView = hitTest(locationPoint, withEvent: event) {
-                if hitView == self {
-                    textField.becomeFirstResponder()
-                }
-            }
+        if let locationPoint = touches.first?.locationInView(self),
+            let hitView = hitTest(locationPoint, withEvent: event) where hitView == self
+        {
+            wasEditing = true
+            textField.becomeFirstResponder()
         }
     }
     
@@ -326,11 +347,39 @@ public class TagListView: UIView, UITextFieldDelegate {
     
     public func textFieldShouldReturn(textField: UITextField) -> Bool {
         
-        if let text = textField.text {
-            addTag(text)
+        if let text = textField.text where textField == self.textField {
+            var isRepeat = false
+            for tagView in tagViews {
+                if tagView.currentTitle == text {
+                    isRepeat = true
+                }
+            }
+            
+            self.text = nil
+            self.textField.text = nil
+            
+            if !isRepeat {
+                let scrubbedText = text.stringByTrimmingCharactersInSet(
+                    NSCharacterSet.whitespaceAndNewlineCharacterSet()
+                )
+                addTag(scrubbedText)
+            }
         }
         
         return true
+    }
+    
+    var previousRowRemainder: CGFloat = 0.0
+    
+    func textFieldDidChange(textField: TextField) {
+        text = textField.text
+        if textField.frame.origin.x + textField.textWidth  > frame.size.width  {
+            previousRowRemainder = frame.size.width - textField.frame.origin.x
+            rearrangeViews()
+        } else if textField.textWidth < previousRowRemainder {
+            previousRowRemainder = 0.0
+            rearrangeViews()
+        }
     }
     
     // MARK: - Manage tags
@@ -428,7 +477,7 @@ public class TagListView: UIView, UITextFieldDelegate {
         tagBackgroundViews = []
         rearrangeViews()
     }
-
+    
     public func selectedTags() -> [TagView] {
         return tagViews.filter() { $0.selected == true }
     }
@@ -436,6 +485,8 @@ public class TagListView: UIView, UITextFieldDelegate {
     // MARK: - Events
     
     func tagPressed(sender: TagView!) {
+        hiddenTextField.becomeFirstResponder()
+        wasEditing = true
         sender.onTap?(sender)
         delegate?.tagPressed?(sender.currentTitle ?? "", tagView: sender, sender: self)
     }
@@ -444,5 +495,21 @@ public class TagListView: UIView, UITextFieldDelegate {
         if let tagView = closeButton.tagView {
             delegate?.tagRemoveButtonPressed?(tagView.currentTitle ?? "", tagView: tagView, sender: self)
         }
+    }
+    
+    public override func resignFirstResponder() -> Bool {
+        hiddenTextField.resignFirstResponder()
+        textField.resignFirstResponder()
+        return true
+    }
+    
+    public func tagValues() -> [String] {
+        var values = [String]()
+        for tagView in tagViews {
+            if let value = tagView.currentTitle {
+                values.append(value)
+            }
+        }
+        return values
     }
 }
