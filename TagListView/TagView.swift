@@ -10,7 +10,7 @@ import UIKit
 
 @IBDesignable
 public class TagView: UIButton {
-
+    
     @IBInspectable public var cornerRadius: CGFloat = 0 {
         didSet {
             layer.cornerRadius = cornerRadius
@@ -51,7 +51,7 @@ public class TagView: UIButton {
             updateRightInsets()
         }
     }
-
+    
     @IBInspectable public var tagBackgroundColor: UIColor = UIColor.grayColor() {
         didSet {
             reloadStyles()
@@ -176,7 +176,7 @@ public class TagView: UIButton {
     }
     
     // MARK: - layout
-
+    
     private func updateRightInsets() {
         if enableRemoveButton {
             titleEdgeInsets.right = paddingX  + removeButtonIconSize + paddingX
